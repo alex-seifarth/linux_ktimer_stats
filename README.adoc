@@ -1,0 +1,34 @@
+= Kernel Timer Stats
+
+This small little kernel module and associated user application are there to 
+collect statistics about the standard linux kernel timers and their real timeout.
+
+== Build
+
+Requirements:
+- build-essentials, linux-headers-$(uname)
+- kernel with enabled linux kernel module framework (e.g. insmod/rmmod)
+
+To build enter the directory and invoke
+[source, bash]
+----
+make
+----
+
+== Usage
+
+Stay in the build directory and execute
+[source, bash]
+----
+./run.sh > data.tsv
+----
+
+This script inserts the module, creates a device file (`/dev/lkm_timer_stats`) 
+and then runs the application `app` for timer values from 1us to 500ms. It may take a while.
+The result is stored in the file `data.tsv` or however you name it.
+
+The output file is a tab separated list with one line for each timer value.
+The desired timer value is given in column 0, then follow the real time intervals (512 samples).
+All times are in microseconds.
+
+
