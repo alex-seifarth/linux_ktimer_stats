@@ -1,7 +1,11 @@
 = Kernel Timer Stats
 
 This small little kernel module and associated user application are there to 
-collect statistics about the standard linux kernel timers and their real timeout.
+collect statistics about the real experienced timeouts from 
+- linux standard kernel timers (`linux/timer.h`) and
+- high resolution kernel timers (`linux/hrtimer.h`).
+
+The tool runs on linux 5.x and 6.1, 6.2 kernels.
 
 == Build
 
@@ -17,10 +21,15 @@ make
 
 == Usage
 
-Stay in the build directory and execute
+Stay in the build directory and execute the `runs.sh` script. For a kernel timer test do
 [source, bash]
 ----
-./run.sh > data.tsv
+./run.sh kt > data.tsv
+----
+For a high resolution timer test do 
+[source, bash]
+----
+./run.sh hr > data_hr.tsv
 ----
 
 This script inserts the module, creates a device file (`/dev/lkm_timer_stats`) 
@@ -30,5 +39,16 @@ The result is stored in the file `data.tsv` or however you name it.
 The output file is a tab separated list with one line for each timer value.
 The desired timer value is given in column 0, then follow the real time intervals (512 samples).
 All times are in microseconds.
+
+== Trouble Shooting
+The script inserts the module and creates a device node before it starts the test application. 
+When done it will remove the module and delete the device file. 
+
+In case the script fails in between it may happen that these two cleanup tasks are not done. Then do the following:
+[source, bash]
+----
+sudo rmmode lkm_timer_stats
+sudo rm /dev/lkm_timer_stats
+----
 
 

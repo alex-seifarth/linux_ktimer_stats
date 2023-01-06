@@ -63,7 +63,7 @@ clean:
 	rm -f *~   # from 'indent'
 	rm -f app.o app
 
-app:
+app: app.c
 	$(CC) app.c -o app 
 
 #--------------- More (useful) targets! -------------------------------

@@ -35,5 +35,7 @@ struct lkm_timer_stats_run {
 
 #define LKM_TIMER_STATS_IOCTL_RUN	_IOWR(LKM_TIMER_STATS_IOCTL_MAGIC, 1, struct lkm_timer_stats_run *)
 
+#define LKM_TIMER_STATS_IOCTL_RUN_HR	_IOWR(LKM_TIMER_STATS_IOCTL_MAGIC, 2, struct lkm_timer_stats_run *)
+
 #endif /* _LKM_TIMER_STATS_IOCTL_H_ */
 

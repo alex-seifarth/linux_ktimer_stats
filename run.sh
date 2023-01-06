@@ -7,6 +7,11 @@ DEVICE_NODE=/dev/lkm_timer_stats
 COUNT_SAMPLES=512
 APP="${SCRIPT_DIR}/app"
 
+if [[ "$1" != "hr" ]] && [[ "$1" != "kt" ]]; then
+	echo "invalid argument, must be 'hr' or 'kt'" >&2
+	exit 1
+fi
+
 if [ -e "${DEVICE_NODE}" ]; then
 	echo "device file ${DEVICE_NODE} exists" >&2
 	exit 1
@@ -41,7 +46,7 @@ do
 	do
 		iv=$(($b * $m))
 		echo "Interval $iv us ..." >&2
-		echo $(${APP} "${DEVICE_NODE}" "${iv}" "${COUNT_SAMPLES}")
+		echo $(${APP} "${DEVICE_NODE}" "${iv}" "${COUNT_SAMPLES}" "$1") 
 	done
 done
 

@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "lkm_timer_stats_ioctl.h"
 
@@ -15,15 +16,16 @@
 
 int main(int argc, char *argv[])
 {
-	int fd, value, res;
+	int fd, res, hres;
 
-	if (argc != 4) {
-		fprintf(stderr, "Usage %s <device file path> <interval in us> <number of samples>\n",
+	if (argc != 5) {
+		fprintf(stderr, "Usage %s <device file path> <interval in us> <number of samples> [hr|kt]\n",
 			argv[0]);
 		exit(EXIT_FAILURE);
 	}
 
 	int interval_us = atoi(argv[2]);
+
 	if (interval_us <= 0 || interval_us > MAX_INTERVAL_US) {
 		fprintf(stderr, "Invalid time interval in us: %s\n"
 			"Must be 1..%d\n", argv[2], MAX_INTERVAL_US);
@@ -31,9 +33,22 @@ int main(int argc, char *argv[])
 	}
 
 	int samples_count = atoi(argv[3]);
+
 	if (samples_count == 0 || samples_count > LKM_TIMER_STATS_MAX_SAMPLES) {
 		fprintf(stderr, "Invalid number of sumples: %s\n"
 			"Must be 1..%d\n", argv[3], LKM_TIMER_STATS_MAX_SAMPLES);
+		exit(EXIT_FAILURE);
+	}
+
+
+	if (strncmp(argv[4], "hr", 2) == 0)
+		hres = 1;
+	else if (strncmp(argv[4], "kt", 2) == 0)
+		hres = 0;
+	else {
+
+		fprintf(stderr, "Invalid timer type: %s\nMust be 'hr' or 'kt'.",
+			argv[4]);
 		exit(EXIT_FAILURE);
 	}
 
@@ -53,7 +68,11 @@ int main(int argc, char *argv[])
 		.measurements_len = samples_count * sizeof(u64),
 	};
 
-	res = ioctl(fd, LKM_TIMER_STATS_IOCTL_RUN, &cmd);
+	if (hres == 0)
+		res = ioctl(fd, LKM_TIMER_STATS_IOCTL_RUN, &cmd);
+	else
+		res = ioctl(fd, LKM_TIMER_STATS_IOCTL_RUN_HR, &cmd);
+
 	if (res == -1) {
 		perror("ioctl LKM_TIMER_STATS_IOCTL failed");
 		close(fd);
@@ -61,9 +80,8 @@ int main(int argc, char *argv[])
 	}
 
 	printf("%6.2f", interval_us * 1.f);
-	for (int i = 0; i < samples_count; ++i) {
-		printf("\t%6.2f", measurements[i]/1000.);
-	}
+	for (int i = 0; i < samples_count; ++i)
+		printf("\t%8.2f", measurements[i]/1000.);
 	printf("\n");
 
 	free(measurements);
